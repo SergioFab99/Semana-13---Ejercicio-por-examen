@@ -1,169 +1,135 @@
-    using UnityEngine;
-    using UnityEngine.Networking;
-    using System.Collections;
-    using System.Collections.Generic; // Necesario para List
-    using TMPro; // Necesario para TextMeshPro InputField, Dropdown y Text
-    using UnityEngine.SceneManagement; // Necesario para gestionar el cambio de escenas
+using UnityEngine;
+using UnityEngine.Networking;
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine.SceneManagement;
 
-    public class RegistroUsuario : MonoBehaviour
+public class RegistroUsuario : MonoBehaviour
+{
+    public TMP_InputField inputNombreUsuario;
+    public TMP_InputField inputContrasena;
+    public TMP_Dropdown dropdownAves;
+    public TMP_Text textoMensaje;
+
+    private readonly string baseURL = "http://localhost/flappybird/";
+
+    [System.Serializable]
+    public class ResponseData
     {
-        // =====================================================================================
-        // VARIABLES PÚBLICAS ASIGNABLES DESDE EL INSPECTOR (SOLO PARA REGISTRO)
-        // =====================================================================================
+        public string message;
+        public string details;
+        public int user_id;
+    }
 
-        public TMP_InputField inputNombreUsuario; // Asigna el InputField del nombre de usuario
-        public TMP_InputField inputContrasena;    // Asigna el InputField de la contraseña
-        public TMP_Dropdown dropdownAves;         // Asigna el Dropdown para seleccionar el ave
-        public TMP_Text textoMensaje;             // Asigna el TextMeshPro para mostrar mensajes al usuario
+    [System.Serializable]
+    public class BirdsResponse
+    {
+        public string message;
+        public string details;
+        public BirdData[] data;
+    }
 
-        // =====================================================================================
-        // VARIABLES INTERNAS DEL SCRIPT
-        // =====================================================================================
+    [System.Serializable]
+    public class BirdData
+    {
+        public int id;
+        public string nombre;
+    }
 
-        private readonly string baseURL = "http://localhost/flappybird/";
+    void Start()
+    {
+        StartCoroutine(GetBirdsCoroutine());
+    }
 
-        // =====================================================================================
-        // CLASES AUXILIARES PARA DESERIALIZAR LAS RESPUESTAS JSON DE PHP
-        // =====================================================================================
+    public void Registrar()
+    {
+        string nombre = inputNombreUsuario.text.Trim();
+        string contrasena = inputContrasena.text.Trim();
+        int aveId = dropdownAves.value + 1;
 
-        [System.Serializable]
-        public class ResponseData
+        if (string.IsNullOrEmpty(nombre) || string.IsNullOrEmpty(contrasena))
         {
-            public string message;
-            public string details;
-            public int user_id;   // Asegúrate que tu PHP de registro devuelve el ID del usuario
+            textoMensaje.text = "Completa todos los campos.";
+            return;
         }
 
-        [System.Serializable]
-        public class BirdsResponse
+        StartCoroutine(RegisterUserCoroutine(nombre, contrasena, aveId));
+    }
+
+    private IEnumerator RegisterUserCoroutine(string nombreUsuario, string contrasena, int aveId)
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("nombre_usuario", nombreUsuario);
+        form.AddField("contrasena", contrasena);
+        form.AddField("ave_id", aveId);
+
+        using (UnityWebRequest request = UnityWebRequest.Post(baseURL + "registro_usuario.php", form))
         {
-            public string message;
-            public string details;
-            public BirdData[] data;
-        }
+            textoMensaje.text = "Registrando...";
+            yield return request.SendWebRequest();
 
-        [System.Serializable]
-        public class BirdData
-        {
-            public int id;
-            public string nombre;
-        }
-
-        // =====================================================================================
-        // MÉTODOS DE INICIALIZACIÓN DE UNITY
-        // =====================================================================================
-
-        void Start()
-        {
-            StartCoroutine(GetBirdsCoroutine());
-        }
-
-        // =====================================================================================
-        // FUNCIONALIDAD PRINCIPAL: REGISTRO DE USUARIO
-        // =====================================================================================
-
-        public void Registrar()
-        {
-            string nombre = inputNombreUsuario.text.Trim();
-            string contrasena = inputContrasena.text.Trim();
-            int aveId = dropdownAves.value + 1;
-
-            if (string.IsNullOrEmpty(nombre) || string.IsNullOrEmpty(contrasena))
+            if (request.result == UnityWebRequest.Result.Success)
             {
-                textoMensaje.text = "Completa todos los campos.";
-                return;
-            }
+                string responseText = request.downloadHandler.text;
+                Debug.Log("Respuesta del servidor (Registro): " + responseText);
+                ResponseData response = JsonUtility.FromJson<ResponseData>(responseText);
 
-            StartCoroutine(RegisterUserCoroutine(nombre, contrasena, aveId));
-        }
-
-        private IEnumerator RegisterUserCoroutine(string nombreUsuario, string contrasena, int aveId)
-        {
-            WWWForm form = new WWWForm();
-            form.AddField("nombre_usuario", nombreUsuario);
-            form.AddField("contrasena", contrasena);
-            form.AddField("ave_id", aveId);
-
-            using (UnityWebRequest request = UnityWebRequest.Post(baseURL + "registro_usuario.php", form))
-            {
-                textoMensaje.text = "Registrando...";
-                yield return request.SendWebRequest();
-
-                if (request.result == UnityWebRequest.Result.Success)
+                if (response.message == "success")
                 {
-                    string responseText = request.downloadHandler.text;
-                    Debug.Log("Respuesta del servidor (Registro): " + responseText);
-                    ResponseData response = JsonUtility.FromJson<ResponseData>(responseText);
+                    textoMensaje.text = "¡Usuario registrado exitosamente!";
+                    inputNombreUsuario.text = "";
+                    inputContrasena.text = "";
 
-                    if (response.message == "success")
-                    {
-                        textoMensaje.text = "¡Usuario registrado exitosamente!";
-                        inputNombreUsuario.text = "";
-                        inputContrasena.text = "";
-
-                        // ====================================================================
-                        // ¡¡PASO CRUCIAL!! Pasar los datos al GameManager antes de cargar la escena de juego.
-                        // Usamos el user_id devuelto por el PHP y un nivel por defecto para pruebas (ID 1).
-                        // "Bosque Tranquilo" es el nombre del nivel por defecto (ID 1).
-                        // ====================================================================
-                        GameManager.SetGameSessionData(response.user_id, nombreUsuario, 1, "Bosque Tranquilo");
-
-                        // Ahora, cargar la escena de juego.
-                        // Asegúrate de que "FlappyEscena" sea el nombre EXACTO de tu escena de juego
-                        // y que esté añadida en File > Build Settings.
-                        SceneManager.LoadScene("FlappyEscena");
-                    }
-                    else
-                    {
-                        textoMensaje.text = "Error de registro: " + response.details;
-                    }
+                    GameManager.SetGameSessionData(response.user_id, nombreUsuario, 1, "Bosque Tranquilo");
+                    SceneManager.LoadScene("FlappyEscena");
                 }
                 else
                 {
-                    Debug.LogError("Error en la solicitud web (Registro): " + request.error);
-                    textoMensaje.text = "Error de conexión o problema en el servidor: " + request.error;
+                    textoMensaje.text = "Error de registro: " + response.details;
                 }
             }
-        }
-
-        // =====================================================================================
-        // OTRAS FUNCIONALIDADES: CARGAR AVES PARA EL DROPDOWN
-        // =====================================================================================
-
-        private IEnumerator GetBirdsCoroutine()
-        {
-            using (UnityWebRequest request = UnityWebRequest.Get(baseURL + "get_birds.php"))
+            else
             {
-                yield return request.SendWebRequest();
-
-                if (request.result == UnityWebRequest.Result.Success)
-                {
-                    string responseText = request.downloadHandler.text;
-                    Debug.Log("Respuesta de Aves: " + responseText);
-                    BirdsResponse birdsResponse = JsonUtility.FromJson<BirdsResponse>(responseText);
-
-                    if (birdsResponse.message == "success" && birdsResponse.data != null)
-                    {
-                        dropdownAves.ClearOptions();
-                        List<string> birdNames = new List<string>();
-                        foreach (BirdData bird in birdsResponse.data)
-                        {
-                            birdNames.Add(bird.nombre);
-                        }
-                        dropdownAves.AddOptions(birdNames);
-                        textoMensaje.text = "Aves cargadas.";
-                    }
-                    else
-                    {
-                        textoMensaje.text = "Error al cargar aves: " + birdsResponse.details;
-                    }
-                }
-                else
-                {
-                    Debug.LogError("Error al obtener aves: " + request.error);
-                    textoMensaje.text = "Error de conexión al cargar aves: " + request.error;
-                }
+                Debug.LogError("Error en la solicitud web (Registro): " + request.error);
+                textoMensaje.text = "Error de conexión o problema en el servidor: " + request.error;
             }
         }
     }
-    
+
+    private IEnumerator GetBirdsCoroutine()
+    {
+        using (UnityWebRequest request = UnityWebRequest.Get(baseURL + "get_birds.php"))
+        {
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                string responseText = request.downloadHandler.text;
+                Debug.Log("Respuesta de Aves: " + responseText);
+                BirdsResponse birdsResponse = JsonUtility.FromJson<BirdsResponse>(responseText);
+
+                if (birdsResponse.message == "success" && birdsResponse.data != null)
+                {
+                    dropdownAves.ClearOptions();
+                    List<string> birdNames = new List<string>();
+                    foreach (BirdData bird in birdsResponse.data)
+                    {
+                        birdNames.Add(bird.nombre);
+                    }
+                    dropdownAves.AddOptions(birdNames);
+                    textoMensaje.text = "Aves cargadas.";
+                }
+                else
+                {
+                    textoMensaje.text = "Error al cargar aves: " + birdsResponse.details;
+                }
+            }
+            else
+            {
+                Debug.LogError("Error al obtener aves: " + request.error);
+                textoMensaje.text = "Error de conexión al cargar aves: " + request.error;
+            }
+        }
+    }
+}
