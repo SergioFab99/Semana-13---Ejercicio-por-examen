@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
     public static int currentPlayedLevelId = 0;
     public static string currentPlayedLevelName = "";
     public static float lastScoreSubmitted = 0f;
+    public static string lastGameScene; // Variable para guardar la escena anterior
     private float survivalTime = 0f;
     private bool isGameActive = false;
     private readonly string baseURL = "http://localhost/flappybird/";
@@ -52,6 +53,10 @@ public class GameManager : MonoBehaviour
 
         isGameActive = false;
         lastScoreSubmitted = survivalTime;
+
+        // Guardar la escena actual antes de ir a GameOver
+        lastGameScene = SceneManager.GetActiveScene().name;
+        Debug.Log("Guardando escena: " + lastGameScene); // Para debug
 
         if (currentLoggedInUserId != 0 && currentPlayedLevelId != 0)
         {

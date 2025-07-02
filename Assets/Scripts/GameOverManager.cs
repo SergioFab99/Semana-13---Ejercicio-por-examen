@@ -10,6 +10,7 @@ public class GameOverManager : MonoBehaviour
     public TMP_Text gameTimeDisplay;
     public Button restartButton;
     public Button mainMenuButton;
+    public Button rankingButton;
 
     void Start()
     {
@@ -36,23 +37,36 @@ public class GameOverManager : MonoBehaviour
         {
             mainMenuButton.onClick.AddListener(GoToMainMenu);
         }
+        if (rankingButton != null)
+        {
+            rankingButton.onClick.AddListener(GoToRanking);
+        }
     }
 
     public void RestartGame()
     {
-        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
-        if (currentSceneIndex > 0)
+        Debug.Log("Intentando cargar escena: " + GameManager.lastGameScene); // Para debug
+        
+        // Cargar la escena de juego desde la que viniste
+        if (!string.IsNullOrEmpty(GameManager.lastGameScene))
         {
-            SceneManager.LoadScene(currentSceneIndex - 1);
+            SceneManager.LoadScene(GameManager.lastGameScene);
         }
         else
         {
-            Debug.LogWarning("No hay escena anterior disponible");
+            Debug.LogWarning("No se ha guardado la escena de juego anterior");
+            // Fallback: intentar cargar una escena de juego por defecto
+            SceneManager.LoadScene("GameScene"); // Cambia "GameScene" por el nombre de tu escena de juego principal
         }
     }
 
     public void GoToMainMenu()
     {
         SceneManager.LoadScene("Registro");
+    }
+
+    public void GoToRanking()
+    {
+        SceneManager.LoadScene("Ranking");
     }
 }

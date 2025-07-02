@@ -7,7 +7,7 @@ using TMPro;
 public class RegistroUsuario : MonoBehaviour
 {
     public TMP_InputField inputNombreUsuario;
-    public TMP_InputField inputContrasena;
+    public TMP_InputField inputContrasena; // Campo de contraseña
     public TMP_Dropdown dropdownAves;
     public TMP_Text textoMensaje;
 
@@ -38,6 +38,10 @@ public class RegistroUsuario : MonoBehaviour
 
     void Start()
     {
+        // Establecer el campo de la contraseña como "Password" para ocultar la entrada
+        inputContrasena.contentType = TMP_InputField.ContentType.Password;
+        inputContrasena.gameObject.SetActive(true); // Asegúrate de que esté activo
+
         StartCoroutine(GetBirdsCoroutine());
     }
 
