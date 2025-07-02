@@ -3,7 +3,6 @@ using UnityEngine.Networking;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using UnityEngine.SceneManagement;
 
 public class RegistroUsuario : MonoBehaviour
 {
@@ -82,7 +81,6 @@ public class RegistroUsuario : MonoBehaviour
                     inputContrasena.text = "";
 
                     GameManager.SetGameSessionData(response.user_id, nombreUsuario, 1, "Bosque Tranquilo");
-                    SceneManager.LoadScene("FlappyEscena");
                 }
                 else
                 {

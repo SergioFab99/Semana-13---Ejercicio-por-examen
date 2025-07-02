@@ -17,7 +17,7 @@ public class LevelSelector: MonoBehaviour
         nivel1Button.onClick.AddListener(() => LoadLevel("Bosque Tranquilo"));
         nivel2Button.onClick.AddListener(() => LoadLevel("Cuevas Oscuras"));
         nivel3Button.onClick.AddListener(() => LoadLevel("Cielos Tormentosos"));
-        nivel4Button.onClick.AddListener(() => LoadLevel("El Gran Cañón"));
+        nivel4Button.onClick.AddListener(() => LoadLevel("El gran cañon"));
     }
 
     void LoadLevel(string levelName)

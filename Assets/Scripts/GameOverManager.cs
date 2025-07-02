@@ -40,7 +40,15 @@ public class GameOverManager : MonoBehaviour
 
     public void RestartGame()
     {
-        SceneManager.LoadScene("FlappyEscena");
+        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+        if (currentSceneIndex > 0)
+        {
+            SceneManager.LoadScene(currentSceneIndex - 1);
+        }
+        else
+        {
+            Debug.LogWarning("No hay escena anterior disponible");
+        }
     }
 
     public void GoToMainMenu()

@@ -9,19 +9,19 @@ EditorBuildSettings:
     path: Assets/Scenes/Registro.unity
     guid: a3159b722ad26d04e8ab790ce344c267
   - enabled: 1
-    path: Assets/Scenes/Selector de Niveles.unity
+    path: Assets/Scenes/LevelSelection.unity
     guid: eb2fb296bbf5583438077d7e6bcaac15
   - enabled: 1
-    path: Assets/Scenes/Bosque Tranquilo.unity
+    path: Assets/Scenes/Niveles/Bosque Tranquilo.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
   - enabled: 1
-    path: Assets/Scenes/Cuevas Oscuras.unity
+    path: Assets/Scenes/Niveles/Cuevas Oscuras.unity
     guid: da950ea939ab5784e8eb54963a31b631
   - enabled: 1
-    path: "Assets/Scenes/El gran ca\xF1on.unity"
+    path: "Assets/Scenes/Niveles/El gran ca\xF1on.unity"
     guid: 687cff00e5e6fcf42b014ec9f372640b
   - enabled: 1
-    path: Assets/Scenes/Cielos Tormentosos.unity
+    path: Assets/Scenes/Niveles/Cielos Tormentosos.unity
     guid: 9825dd541cde89e41b3ae7d4dc392b86
   - enabled: 1
     path: Assets/Scenes/GameOver.unity
